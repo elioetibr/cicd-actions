@@ -1,0 +1,62 @@
+name: Actions Deployment
+description: This Action Deployment Information
+author: elio@sre.is
+
+inputs:
+  version:
+    description: Application Version
+    required: true
+  environment:
+    default: dev
+    description: Deployment Environment
+    required: false
+  gitops_file:
+    default: .gitops.yaml
+    description: GitOps File Path/Name
+    required: false
+  owner:
+    default: ${{ github.repository_owner }}
+    description: GitHub Organization Owner
+    required: false
+  ref:
+    default: ${{ github.repository.default_branch }}
+    description: GitHub Organization Commit Hash or Branch Reference
+    required: false
+  repo:
+    default: ${{ github.repository.name }}
+    description: GitHub Repository
+    required: false
+  token:
+    default: ${{ github.token }}
+    description: GitHub Token
+    required: false
+
+outputs:
+  app_version:
+    description: Application Version
+  branch:
+    description: Current Working Branch
+  chart_version:
+    description: Helm Chart Version
+  deployment:
+    description: Deployment Map/Object Configuration
+  deployment_list:
+    description: Deployment List that can be used with Matrix Configuration
+  deployment_manifest:
+    description: Deployment Map/Object Manifest
+  environment:
+    description: Environment Name
+  major:
+    description: Major from Semantic Version
+  minor:
+    description: Minor from Semantic Version
+  patch:
+    description: Patch from Semantic Version
+  sem_ver:
+    description: Application Semantic Version
+  service:
+    description: Application Service Name. Match with Helm Charts
+
+runs:
+  using: 'node20'
+  main: 'dist/index.js'

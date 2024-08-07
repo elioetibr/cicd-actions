@@ -1,0 +1,47 @@
+name: nektos
+
+on:
+  workflow_dispatch:
+
+jobs:
+  act:
+    if: ${{ github.event.act }}
+    name: Act
+    runs-on: ubuntu-latest
+    env:
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Get Manifest
+        id: manifest
+        uses: ./
+        with:
+          version: ${{ vars.APP_VERSION }}
+          gitops_file: ${{ vars.GITOPS_FILE }}
+          environment: ${{ vars.DEPLOYMENT_ENV }}
+          repo: ${{ vars.GITHUB_REPO }}
+          ref: ${{ vars.GITHUB_REF }}
+
+      - name: Show Manifest
+        id: show
+        shell: bash -l {0}
+        run: |
+          #!/usr/bin/env bash
+          
+          set -euo pipefail
+          
+          echo '========== Outputs =========='
+          echo 'app_version => ${{ steps.show.outputs.app_version }}'
+          echo 'chart_version => ${{ steps.show.outputs.chart_version }}'
+          echo
+          echo '========== Json Outputs =========='
+          echo '${{ toJSON(fromJSON(steps.show.outputs.deployment)) }}'
+          echo
+          echo '${{ toJSON(fromJSON(steps.show.outputs.deployment_list)) }}'
+          echo
+          echo '${{ toJSON(fromJSON(steps.show.outputs.show)) }}'
+          echo
+          echo '${{ toJSON(steps.show.outputs) }}'
+          echo

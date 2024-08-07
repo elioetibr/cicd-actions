@@ -1,0 +1,11 @@
+{
+  "act": true,
+  "action": "act",
+  "inputs": {
+    "environment": "dev",
+    "gitops_file": "roicalc/.gitops.yaml",
+    "owner": "StanzaSystems",
+    "ref": "dataanalysis-feat-roicalc-cicd",
+    "repo": "dataanalysis"
+  }
+}
