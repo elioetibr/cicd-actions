@@ -1,0 +1,60 @@
+name: nektos
+
+on:
+  workflow_dispatch:
+
+jobs:
+  act:
+    if: ${{ github.event.act }}
+    name: Act
+    runs-on: ubuntu-latest
+    env:
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Get Manifest
+        id: manifest
+        uses: ./
+        with:
+          version: ${{ vars.APP_VERSION }}
+          gitops_file: ${{ vars.GITOPS_FILE }}
+          environment: ${{ vars.DEPLOYMENT_ENV }}
+          repo: ${{ vars.GITHUB_REPO }}
+          ref: ${{ vars.GITHUB_REF }}
+
+      - name: Show Manifest Results
+        id: show
+        shell: bash -l {0}
+        run: |
+          #!/usr/bin/env bash
+          
+          set -euo pipefail
+          
+          JSON_DATA="manifest.json"
+          
+          echo '========== Outputs =========='
+          echo 'app_version => ${{ steps.manifest.outputs.app_version }}'
+          echo 'chart_version => ${{ steps.manifest.outputs.chart_version }}'
+          echo
+          echo '========== Printing Outputs into Json Format =========='
+          echo '${{ toJSON(steps.manifest.outputs) }}'
+          echo
+          echo '========== Echoing Outputs into Manifest Json File =========='          
+          echo '${{ toJSON(steps.manifest.outputs) }}' > ${JSON_DATA}
+          cat ${JSON_DATA}
+          echo
+
+          # Set Array dynamically of Keys from JSON_DATA map
+          OUTPUTS_KEYS=($(jq  -Scr '. | keys | .[]' < ${JSON_DATA}))
+
+          # Exporting keys to GITHUB_ENV and GITHUB_OUTPUT
+          for key in "${OUTPUTS_KEYS[@]}";
+          do
+            echo "Exporting to GITHUB_ENV    => ${key^^}=$(jq -r .${key} ${JSON_DATA})"
+            echo "${key^^}=$(jq -r .${key} ${JSON_DATA})" >> $GITHUB_ENV
+
+            echo "Exporting to GITHUB_OUTPUT => ${key}=$(jq -r .${key} ${JSON_DATA})"
+            echo "${key}=$(jq -r .${key} ${JSON_DATA})" >> $GITHUB_OUTPUT
+          done
